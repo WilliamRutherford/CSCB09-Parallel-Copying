@@ -128,3 +128,23 @@ void print_ftree_helper(struct TreeNode *root, int depth) {
 	}
     return; 
 }
+
+int copy_ftree(const char *src, const char *dest) {
+    // if source or destinatoin does not exist
+    struct stat *sourcefile = malloc(sizeof(struct stat));
+    struct stat *destinationfile = malloc(sizeof(struct stat));
+    if (lstat(src, sourcefile) < 0 || lstat(dest, destinationfile) < 0){
+        return -1;
+    }
+    // if destination is not a directory, give error
+    if (!(S_ISDIR(destinationfile -> st_mode)){
+        return -1;
+    }
+    if (S_DIR(sourcefile -> st_mode)){ //copying file is a directory
+        mkdir(dest, destinationfile ->st_mode); //generate directory in destination location
+     } else { // copying file is not directory
+
+     }
+
+
+}
