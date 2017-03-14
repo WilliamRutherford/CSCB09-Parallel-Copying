@@ -140,13 +140,13 @@ int copy_ftree(const char *src, const char *dest) {
         return -1;
     }
     // if destination is not a directory, give error
-    if (!(S_ISDIR(destinationfile -> st_mode)){
+    if (!(S_ISDIR(destinationfile -> st_mode))){
         return -1;
     } //if source is a file
     if (S_ISREG(sourcefile -> st_mode)){
         directory = opendir(dest);
         while((dir_contents = readdir(directory)) != NULL){
-            if (strcmp(dir_contents -> d_name, src){ // if they have the same name
+            if (strcmp(dir_contents -> d_name, src)){ // if they have the same name
                 struct stat *file2 = malloc(sizeof(struct stat));
                 lstat(dir_contents -> d_name, file2); //need actual file path will do later
                 FILE *f1 = fopen(src, 'rb');
@@ -157,18 +157,19 @@ int copy_ftree(const char *src, const char *dest) {
                         f2 = fopen(dir_contents -> d_name, 'wb');
                         rewind(f1);
                         void buffer = malloc(100);
-                        while((fread(buffer, 1, sizeof(buffer), f1) != 0){
+                        while((fread(buffer, 1, sizeof(buffer), f1) != 0)){
                             fwrite(buffer, 1, sizeof(buffer), f2);
                         }
 
                     } 
 
+                } else { // file does not exists in destination directory
+                    FILE *f1 = fopen(src, 'rb');
+                    FILE *f2 = fopen
                 }
-            else{ // file does not exists in destination directory
-                FILE *f1 = fopen(src, 'rb');
-                FILE *f2 = fopen
-            }
             
-        }
+            }
+    	}
     }
 }
+
