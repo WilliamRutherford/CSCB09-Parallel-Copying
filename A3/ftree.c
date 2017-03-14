@@ -121,7 +121,7 @@ void print_ftree_helper(struct TreeNode *root, int depth) {
 	    while ((root->contents) != NULL){  
 		  print_ftree_helper(root->contents, depth);
 		  root->contents = root->contents -> next;
-	}
+	    }
     // if node is a file/link
     } else if (root->hash != NULL && root->fname != NULL){
 	   printf("%s (%o)\n", root->fname, root->permissions);
@@ -131,20 +131,44 @@ void print_ftree_helper(struct TreeNode *root, int depth) {
 
 int copy_ftree(const char *src, const char *dest) {
     // if source or destinatoin does not exist
+    result = fork();
     struct stat *sourcefile = malloc(sizeof(struct stat));
     struct stat *destinationfile = malloc(sizeof(struct stat));
+    DIR directory;
+    struct dirent *dir_contents;
     if (lstat(src, sourcefile) < 0 || lstat(dest, destinationfile) < 0){
         return -1;
     }
     // if destination is not a directory, give error
     if (!(S_ISDIR(destinationfile -> st_mode)){
         return -1;
+    } //if source is a file
+    if (S_ISREG(sourcefile -> st_mode)){
+        directory = opendir(dest);
+        while((dir_contents = readdir(directory)) != NULL){
+            if (strcmp(dir_contents -> d_name, src){ // if they have the same name
+                struct stat *file2 = malloc(sizeof(struct stat));
+                lstat(dir_contents -> d_name, file2); //need actual file path will do later
+                FILE *f1 = fopen(src, 'rb');
+                FILE *f2 = fopen(dir_contents ->d_name, 'rb');
+                if (f1 & f2){
+                    if (!((sourcefile->st_size == file2->st_size) && (strcmp(hash(f1),hash(f2))))){ // if they dont have same size and hash
+                        fclose(f2);
+                        f2 = fopen(dir_contents -> d_name, 'wb');
+                        rewind(f1);
+                        void buffer = malloc(100);
+                        while((fread(buffer, 1, sizeof(buffer), f1) != 0){
+                            fwrite(buffer, 1, sizeof(buffer), f2);
+                        }
+
+                    } 
+
+                }
+            else{ // file does not exists in destination directory
+                FILE *f1 = fopen(src, 'rb');
+                FILE *f2 = fopen
+            }
+            
+        }
     }
-    if (S_DIR(sourcefile -> st_mode)){ //copying file is a directory
-        mkdir(dest, destinationfile ->st_mode); //generate directory in destination location
-     } else { // copying file is not directory
-
-     }
-
-
 }
