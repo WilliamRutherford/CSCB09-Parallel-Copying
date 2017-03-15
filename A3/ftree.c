@@ -131,10 +131,10 @@ void print_ftree_helper(struct TreeNode *root, int depth) {
 
 int copy_ftree(const char *src, const char *dest) {
     // if source or destinatoin does not exist
-    result = fork();
     struct stat *sourcefile = malloc(sizeof(struct stat));
     struct stat *destinationfile = malloc(sizeof(struct stat));
     DIR directory;
+    DIR src_directory;
     struct dirent *dir_contents;
     if (lstat(src, sourcefile) < 0 || lstat(dest, destinationfile) < 0){
         return -1;
@@ -144,6 +144,7 @@ int copy_ftree(const char *src, const char *dest) {
         return -1;
     } //if source is a file
     if (S_ISREG(sourcefile -> st_mode)){
+        bool writefile = true;
         directory = opendir(dest);
         while((dir_contents = readdir(directory)) != NULL){
             if (strcmp(dir_contents -> d_name, src)){ // if they have the same name
@@ -151,25 +152,80 @@ int copy_ftree(const char *src, const char *dest) {
                 lstat(dir_contents -> d_name, file2); //need actual file path will do later
                 FILE *f1 = fopen(src, 'rb');
                 FILE *f2 = fopen(dir_contents ->d_name, 'rb');
-                if (f1 & f2){
-                    if (!((sourcefile->st_size == file2->st_size) && (strcmp(hash(f1),hash(f2))))){ // if they dont have same size and hash
-                        fclose(f2);
-                        f2 = fopen(dir_contents -> d_name, 'wb');
-                        rewind(f1);
-                        void buffer = malloc(100);
-                        while((fread(buffer, 1, sizeof(buffer), f1) != 0)){
-                            fwrite(buffer, 1, sizeof(buffer), f2);
-                        }
-
+                if (f1 & f2){ //succesfully open the files
+                    if (((sourcefile->st_size == file2->st_size) && (strcmp(hash(f1),hash(f2))))){ // if they have same size and hash
+                        writefile = false;
                     } 
-
-                } else { // file does not exists in destination directory
-                    FILE *f1 = fopen(src, 'rb');
-                    FILE *f2 = fopen
+                } else{
+                    perror("Error when opening files of the same name");
+                    exit(-1);
                 }
-            
             }
     	}
+        if (writefile){
+            fclose(f2);
+            f2 = fopen(dir_contents -> d_name, 'wb');
+            rewind(f1);
+            void buffer = malloc(100);
+            while((fread(buffer, 1, sizeof(buffer), f1) != 0)){
+                fwrite(buffer, 1, sizeof(buffer), f2); // rewrtie the entire fucken file
+            }
+        }
+        // change permission of rewrittened file
+        chmod(f2, sourcefile -> st_mode) // need actual file path name to use this
+    }
+    // if source is a directory
+    if (S_ISDIR(sourcefile->st_mode)){
+        bool makedir = true;
+        directory = opendir(dest);
+        while((dir_contents = readdir(directory)) != NULL){ // check if directory already exists
+            if (strcmp(dir_contents -> d_name, src) && strcmp(dir_contents -> d_type, DT_DIR)){ // if they have the same name and they are both directories
+                makedir = false;
+            } else if (strcmp(dir_contents -> d_name, src)){
+                perror("there is a file in destination that has the same name as source directory but is not a directory");
+            }
+        }
+        closedir(directory);
+        if (makedir){
+            mkdir(f2, sourcefile ->st_mode); // need actual file path
+        }
+        src_directory = opendir(src);
+        // open source directory and read contents
+        directory = opendir(f2); //need actual file path
+        int parent_i = 0;
+        while ((dir_contents = readdir(src_directory)) != NULL ){ //read all contents in source directory
+            if (strcmp(dir_contents -> d_type, DT_REG)){
+                copy_ftree(dir_contents -> d_name, f2 ) //need actual file path for both arguements
+            } else if (strcmp(dir_contents -> d_type, DT_DIR)){ // if sub directory in source directory is also a directory
+                result = fork();
+                if (result == -1){
+                    perror ("Fork failed");
+                    exit(-1);
+                } else if (result == 0){
+                    int child_i = copy_ftree(dir_contents -> d_name, f2); //need actual file paths
+                    exit(child_i);
+                } else if (result > 0){
+                    parent_i ++;
+                }
+            }
+        }
+        pid_t pid;
+        int status;
+        int child_processes = 0;
+        for(int j = 0; j < parent_i; j++){ //wait 3 times
+            if ((pid = wait(&status) == -1)){ // if wait command fails
+                perror("Wait failed");
+            } else{
+                if (WIFEXITED(status)){ //child terminated
+                    child_processes += WEXITSTATUS(status);
+                    printf("Child %d terminated with %d \n", pid, WEXITSTATUS(status));
+                } else if(WIFSIGNALED(status)){ //child recieved signal to terminate
+                    printf("Child %d recieved signal %d to stop \n", pid, WTERMSIG(status));
+                } else{
+                    printf("fk dat \n");
+                }
+            }
+        }    
+        return parent_i;
     }
 }
-
