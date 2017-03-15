@@ -277,7 +277,7 @@ int copy_ftree(const char *src, const char *dest) {
                 }
             }
         }    
-        return parent_i;
+        return parent_i + child_processes;
     }
 
     exit(0);
