@@ -163,12 +163,12 @@ int copy_ftree(const char *src, const char *dest) {
     FILE *f2 = NULL;
     //printf("INFO: src_name: %s  dest_file: %s \n", src_name, dest_file);
     if (lstat(src, sourcefile) < 0 || lstat(dest, destinationfile) < 0){
-        return -1;
+        exit(-1);
     }
     // if destination is not a directory, give error
     if (!(S_ISDIR(destinationfile -> st_mode))){
         perror("destination is not a directory.");
-    return -1;
+        exit(-1);
     } //if source is a file
     if (S_ISREG(sourcefile -> st_mode)){
    // printf("INFO: %s is regular file \n", src);
@@ -177,6 +177,7 @@ int copy_ftree(const char *src, const char *dest) {
 	if( directory == NULL ){
 	    //printf("failed to open directory.\n");
 	    perror("failed to open a directory.\n");
+	    exit(-1);
 
 	}
         while((dir_contents = readdir(directory)) != NULL){
@@ -208,7 +209,7 @@ int copy_ftree(const char *src, const char *dest) {
 	    if( f2 == NULL ) {
 
                 perror("destination file is null \n");
-
+		exit(-1);
             } else {
 
 	    //printf("rewinding src file\n");
@@ -251,7 +252,8 @@ int copy_ftree(const char *src, const char *dest) {
                 } else if (strcmp(dir_contents -> d_name, src_name) == 0){
                 //printf("BAD: %s is the same as %s \n", dir_contents -> d_name, src_name);
                     perror("there is a file in destination that has the same name as source directory but is not a directory");
-                }
+                    exit(-1);
+		}
             }
         }
         closedir(directory);
@@ -287,24 +289,37 @@ int copy_ftree(const char *src, const char *dest) {
         }
 
         int child_processes = 0;
+	int errors = 0;
         for(int j = 0; j < parent_forks; j++){ //wait 3 times
             pid_t pid;
         int status;
         if ((pid = wait(&status) == -1)){ // if wait command fails
                 perror("Wait failed");
+		exit(-1);
             } else{
                 if (WIFEXITED(status)){ //child terminated
                     child_processes += WEXITSTATUS(status);
+		    if(WEXITSTATUS(status) < 0){
+
+			errors++;
+
+		    }
                     //printf("Child %d terminated with %d \n", pid, WEXITSTATUS(status));
                 } else if(WIFSIGNALED(status)){ //child recieved signal to terminate
                     //printf("Child %d recieved signal %d to stop \n", pid, WTERMSIG(status));
                 } else{
                     perror("undefined wait behaviour occurred");
+		    exit(-1);
                 }
             }
         }
 	//printf("%s -- parent forks: %d sum of child exit codes: %d \n", src, parent_forks, child_processes);    
-        return child_processes + 1;
+        if(errors > 0){
+		return -(child_processes + 1);
+
+	} else {
+	    return child_processes + 1;
+        }
     }
 
     return 1; //exit(0) makes entire program exit causing it to only be able to read one element in a directory
