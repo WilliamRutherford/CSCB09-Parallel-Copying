@@ -171,20 +171,26 @@ int copy_ftree(const char *src, const char *dest) {
     return -1;
     } //if source is a file
     if (S_ISREG(sourcefile -> st_mode)){
-    printf("src is regular file \n");
+    printf("%s is regular file \n", src);
         bool writefile = true;
         directory = opendir(dest);
+	if( directory == NULL ){
+
+	    perror("failed to open a directory.\n");
+
+	}
         while((dir_contents = readdir(directory)) != NULL){
             if (strcmp(dir_contents -> d_name, src) == 0){ // if they have the same name           
-        printf("the two files have the same name");
-        struct stat *file2 = malloc(sizeof(struct stat));
+        	printf("the two files have the same name");
+        	struct stat *file2 = malloc(sizeof(struct stat));
                 lstat(concat(concat(dest, "/"), dir_contents -> d_name), file2); //need actual file path will do later
                 f2 = fopen(dir_contents ->d_name, "rb");
                 if (f1 && f2){ //succesfully open the files
                     if (((sourcefile->st_size == file2->st_size) && (strcmp(hash(f1),hash(f2))== 0))){ // if they have same size and hash
                         writefile = false;
-                    } 
-                } else{
+			
+                    }
+                } else {
                     perror("Error when opening files of the same name \n");
                     exit(-1);
                 }
@@ -192,10 +198,12 @@ int copy_ftree(const char *src, const char *dest) {
            }
         }
         if (writefile){
-            f2 = fopen(dest_file, "wb");
-        if( f2 == NULL ) {
+        
+	    f2 = fopen(dest_file, "wb");
+        
+	if( f2 == NULL ) {
 
-        printf("destination file %s is null \n", dest_file);
+            printf("destination file %s is null \n", dest_file);
 
         }   
 
@@ -209,8 +217,8 @@ int copy_ftree(const char *src, const char *dest) {
         int curr;
         while((curr = fgetc(f1)) != EOF){
             //printf("going to write data \n");
-        fwrite(&curr, 1, sizeof(curr), f2);
-        //printf("wrote some to file \n");
+            fwrite(&curr, 1, sizeof(curr), f2);
+            printf("wrote some to file \n");
 
         }
         printf("file was successfully copied \n");
@@ -241,32 +249,32 @@ int copy_ftree(const char *src, const char *dest) {
         src_directory = opendir(src);
         // open source directory and read contents
         directory = opendir(dest_file); //need actual file path
-        int parent_i = 0;
+        int parent_forks = 0;
         while ((dir_contents = readdir(src_directory)) != NULL ){ //read all contents in source directory
         printf("currently on %s \n", dir_contents->d_name);
             if (dir_contents -> d_name[0] != '.'){
-            if (dir_contents -> d_type ==  DT_REG){
-            printf("recursive call on %s in src, regular file \n", dir_contents ->d_name);
+                if (dir_contents -> d_type ==  DT_REG){
+                    printf("recursive call on %s in src, regular file \n", dir_contents ->d_name);
                     copy_ftree(concat(concat(src,"/"),dir_contents -> d_name), dest_file ); //need actual file path for both arguements
                 } else if (dir_contents -> d_type == DT_DIR){ // if sub directory in source directory is also a directory0
-            printf("recursive call on %s in src, directory \n", dir_contents -> d_name);
-            int result = fork();
+                    printf("recursive call on %s in src, directory \n", dir_contents -> d_name);
+                    int result = fork();
                     if (result == -1){
                         perror ("Fork failed");
                         exit(-1);
                     } else if (result == 0){
-                        int child_i = copy_ftree(concat(concat(src,"/"),dir_contents -> d_name), dest_file); //need actual file paths
+                        int child_i = copy_ftree(concat(concat(src,"/"),dir_contents -> d_name), dest_file);
 
                         exit(child_i);
                     } else if (result > 0){
-                        parent_i ++;
+                        parent_forks ++;
                     }
                 }
             }
-    }
+        }
 
         int child_processes = 0;
-        for(int j = 0; j < parent_i; j++){ //wait 3 times
+        for(int j = 0; j < parent_forks; j++){ //wait 3 times
             pid_t pid;
         int status;
         if ((pid = wait(&status) == -1)){ // if wait command fails
@@ -281,8 +289,9 @@ int copy_ftree(const char *src, const char *dest) {
                     printf("fk dat \n");
                 }
             }
-        }    
-        return parent_i;
+        }
+	printf("%s -- parent forks: %d sum of child exit codes: %d \n", src, parent_forks, child_processes);    
+        return child_processes + 1;
     }
 
     return 1; //exit(0) makes entire program exit causing it to only be able to read one element in a directory
