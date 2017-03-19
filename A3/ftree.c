@@ -46,19 +46,19 @@ struct TreeNode *generate_ftree(const char *fname) {
     struct dirent *dir_contents;
     DIR *directory;
 
-    // if no root exists;
-    if (lstat(fname, currentfile) < 0){
-        printf("lstat: the name '%s' is not a file or directory \n", fname);
-	    return root;
-    }
-    // trim fname
-    char *filename = strrchr(fname, '/');
-    if (filename != NULL)
-    {
-            root->fname = strdup(filename + 1);
+//     // if no root exists;
+//     if (lstat(fname, currentfile) < 0){
+//         printf("lstat: the name '%s' is not a file or directory \n", fname);
+//      return root;
+//     }
+//     // trim fname
+//     char *filename = strrchr(fname, '/');
+//     if (filename != NULL)
+//     {
+//             root->fname = strdup(filename + 1);
 
-    } else {
-            root->fname = strdup(fname);
+//     } else {
+//             root->fname = strdup(fname);
 
     }
     root->permissions = currentfile->st_mode & 0777;
@@ -66,15 +66,15 @@ struct TreeNode *generate_ftree(const char *fname) {
     root->contents = NULL;
     // if current root is a directory
     if (S_ISDIR(currentfile->st_mode)){
-	    directory = opendir(fname);
+        directory = opendir(fname);
         if (directory == NULL){
             fprintf(stderr, "Directory cannont be opened %s \n", root->fname);
             exit(1);
         }
         struct TreeNode *temp_root = malloc(sizeof(struct TreeNode));
-	   	//if there is no files in directory
-    	//go through each file
-	    while ((dir_contents = readdir(directory)) != NULL){
+        //if there is no files in directory
+        //go through each file
+        while ((dir_contents = readdir(directory)) != NULL){
             if (dir_contents->d_name[0] != '.'){ //exclude hidden files
                 char *slash = "/";
                 if (root->contents == NULL){
@@ -86,7 +86,7 @@ struct TreeNode *generate_ftree(const char *fname) {
                     temp_root = temp_root->next; 
               }
             }            
-		}
+        }
         temp_root -> next = NULL;
    } else if (S_ISREG(currentfile->st_mode) || S_ISLNK(currentfile->st_mode)){ // if current root is a link/reg
         FILE *opened_file;
@@ -118,23 +118,23 @@ void print_ftree(struct TreeNode *root) {
     print_ftree_helper(root, depth);
 }
 
-void print_ftree_helper(struct TreeNode *root, int depth) {
-    printf("%*s", depth * 2, "");
-    depth += 1;
-    // if node is a directory
-    if (root->hash == NULL && root->fname != NULL){
-        printf("==== %s (%o) ==== \n", root->fname, root->permissions);
-        // loop through all the contents of the root directory
-	    while ((root->contents) != NULL){  
-		  print_ftree_helper(root->contents, depth);
-		  root->contents = root->contents -> next;
-	    }
-    // if node is a file/link
-    } else if (root->hash != NULL && root->fname != NULL){
-	   printf("%s (%o)\n", root->fname, root->permissions);
-	}
-    return; 
-}
+// void print_ftree_helper(struct TreeNode *root, int depth) {
+//     printf("%*s", depth * 2, "");
+//     depth += 1;
+//     // if node is a directory
+//     if (root->hash == NULL && root->fname != NULL){
+//         printf("==== %s (%o) ==== \n", root->fname, root->permissions);
+//         // loop through all the contents of the root directory
+//      while ((root->contents) != NULL){  
+//        print_ftree_helper(root->contents, depth);
+//        root->contents = root->contents -> next;
+//      }
+//     // if node is a file/link
+//     } else if (root->hash != NULL && root->fname != NULL){
+//     printf("%s (%o)\n", root->fname, root->permissions);
+//  }
+//     return; 
+// }
 */
 
 int copy_ftree(const char *src, const char *dest) {
@@ -153,7 +153,7 @@ int copy_ftree(const char *src, const char *dest) {
 
     } else {
 
-	src_name += sizeof(char);
+    src_name += sizeof(char);
    }
     printf("src_name is %s \n", src_name);
 
@@ -168,70 +168,74 @@ int copy_ftree(const char *src, const char *dest) {
     // if destination is not a directory, give error
     if (!(S_ISDIR(destinationfile -> st_mode))){
         perror("destination is not a directory.");
-	return -1;
+    return -1;
     } //if source is a file
     if (S_ISREG(sourcefile -> st_mode)){
-	printf("src is regular file \n");
+    printf("src is regular file \n");
         bool writefile = true;
         directory = opendir(dest);
         while((dir_contents = readdir(directory)) != NULL){
-            if (strcmp(dir_contents -> d_name, src)){ // if they have the same name           
-		struct stat *file2 = malloc(sizeof(struct stat));
+            if (strcmp(dir_contents -> d_name, src) == 0){ // if they have the same name           
+        printf("the two files have the same name");
+        struct stat *file2 = malloc(sizeof(struct stat));
                 lstat(concat(concat(dest, "/"), dir_contents -> d_name), file2); //need actual file path will do later
                 f2 = fopen(dir_contents ->d_name, "rb");
                 if (f1 && f2){ //succesfully open the files
-                    if (((sourcefile->st_size == file2->st_size) && (strcmp(hash(f1),hash(f2))))){ // if they have same size and hash
+                    if (((sourcefile->st_size == file2->st_size) && (strcmp(hash(f1),hash(f2))== 0))){ // if they have same size and hash
                         writefile = false;
                     } 
                 } else{
                     perror("Error when opening files of the same name \n");
                     exit(-1);
                 }
-           }
-    	}
-        if (writefile){
             fclose(f2);
+           }
+        }
+        if (writefile){
             f2 = fopen(dest_file, "wb");
-	    if( f2 == NULL ) {
+        if( f2 == NULL ) {
 
-		printf("destination file %s is null \n", dest_file);
+        printf("destination file %s is null \n", dest_file);
 
-	    }	
+        }   
 
             rewind(f1);
             //void *buffer = malloc(100);
-	    //printf("code reached point where it starts to copy file data \n");
+        //printf("code reached point where it starts to copy file data \n");
             /*while((fread(buffer, 1, sizeof(buffer), f1) != 0)){
                 fwrite(buffer, 1, sizeof(buffer), f2); // rewrtie the entire fucken file
             
-	    */
-	    int curr;
-	    while((curr = fgetc(f1)) != EOF){
-	        //printf("going to write data \n");
-		fwrite(&curr, 1, sizeof(curr), f2);
-		//printf("wrote some to file \n");
+        */
+        int curr;
+        while((curr = fgetc(f1)) != EOF){
+            //printf("going to write data \n");
+        fwrite(&curr, 1, sizeof(curr), f2);
+        //printf("wrote some to file \n");
 
-	    }
-	    printf("file was successfully copied \n");
-	}
+        }
+        printf("file was successfully copied \n");
+    }
         // change permission of rewrittened file
         
-	chmod(dest_file, sourcefile -> st_mode); // need actual file path name to use this
+    chmod(dest_file, sourcefile -> st_mode); // need actual file path name to use this
     //if source is directory
     } else if (S_ISDIR(sourcefile->st_mode)){
         bool makedir = true;
         directory = opendir(dest);
         while((dir_contents = readdir(directory)) != NULL){ // check if directory already exists
-            if (!strcmp(dir_contents -> d_name, src_name) && (dir_contents -> d_type == DT_DIR)){ // if they have the same name and they are both directories
-                makedir = false;
-            	printf("don't need to make folder %s because %s already exists\n", src_name, dir_contents -> d_name);
-	} else if (strcmp(dir_contents -> d_name, src_name)){
-                perror("there is a file in destination that has the same name as source directory but is not a directory");
-            }
+        if (dir_contents -> d_name[0] != '.'){
+                if (!strcmp(dir_contents -> d_name, src_name) && (dir_contents -> d_type == DT_DIR)){ // if they have the same name and they are both directories
+                    makedir = false;
+                    printf("don't need to make folder %s because %s already exists\n", src_name, dir_contents -> d_name);
+            } else if (strcmp(dir_contents -> d_name, src_name) == 0){
+            printf("%s is the same as %s \n", dir_contents -> d_name, src_name);
+                    perror("there is a file in destination that has the same name as source directory but is not a directory");
+                }
+        }
         }
         closedir(directory);
         if (makedir){
-	    printf("making directory %s \n", dest_file);
+        printf("making directory %s \n", dest_file);
             mkdir(dest_file, sourcefile ->st_mode);
         }
         src_directory = opendir(src);
@@ -239,13 +243,14 @@ int copy_ftree(const char *src, const char *dest) {
         directory = opendir(dest_file); //need actual file path
         int parent_i = 0;
         while ((dir_contents = readdir(src_directory)) != NULL ){ //read all contents in source directory
+        printf("currently on %s \n", dir_contents->d_name);
             if (dir_contents -> d_name[0] != '.'){
-	        if (dir_contents -> d_type ==  DT_REG){
-		    printf("recursive call on file in src \n");
+            if (dir_contents -> d_type ==  DT_REG){
+            printf("recursive call on %s in src, regular file \n", dir_contents ->d_name);
                     copy_ftree(concat(concat(src,"/"),dir_contents -> d_name), dest_file ); //need actual file path for both arguements
                 } else if (dir_contents -> d_type == DT_DIR){ // if sub directory in source directory is also a directory0
-		    printf("recursive call on %s in src \n", dir_contents -> d_name);
-		    int result = fork();
+            printf("recursive call on %s in src, directory \n", dir_contents -> d_name);
+            int result = fork();
                     if (result == -1){
                         perror ("Fork failed");
                         exit(-1);
@@ -258,13 +263,13 @@ int copy_ftree(const char *src, const char *dest) {
                     }
                 }
             }
-	}
+    }
 
         int child_processes = 0;
         for(int j = 0; j < parent_i; j++){ //wait 3 times
             pid_t pid;
-	    int status;
-	    if ((pid = wait(&status) == -1)){ // if wait command fails
+        int status;
+        if ((pid = wait(&status) == -1)){ // if wait command fails
                 perror("Wait failed");
             } else{
                 if (WIFEXITED(status)){ //child terminated
@@ -277,9 +282,8 @@ int copy_ftree(const char *src, const char *dest) {
                 }
             }
         }    
-        return parent_i + child_processes;
+        return parent_i;
     }
 
-    exit(0);
+    return 1; //exit(0) makes entire program exit causing it to only be able to read one element in a directory
 }
-
