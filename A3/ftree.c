@@ -144,7 +144,7 @@ int copy_ftree(const char *src, const char *dest) {
     DIR *directory;
     DIR *src_directory;
     struct dirent *dir_contents;
-    printf(" source : %s   dest : %s \n", src, dest);    
+    printf("INFO: source : %s   dest : %s \n", src, dest);    
 
     char *src_name = strrchr(src, '/');
     if( src_name == NULL ){
@@ -153,15 +153,15 @@ int copy_ftree(const char *src, const char *dest) {
 
     } else {
 
-    src_name += sizeof(char);
-   }
-    printf("src_name is %s \n", src_name);
+        src_name += sizeof(char);
+    }
+    //printf("src_name is %s \n", src_name);
 
     const char *dest_file = concat(concat(dest, "/"), src_name);
-    printf("dest_file is %s \n", dest_file);
+    //printf("dest_file is %s \n", dest_file);
     FILE *f1 = fopen(src, "rb");
     FILE *f2 = NULL;
-
+    printf("INFO: src_name: %s  dest_file: %s \n", src_name, dest_file);
     if (lstat(src, sourcefile) < 0 || lstat(dest, destinationfile) < 0){
         return -1;
     }
@@ -171,23 +171,26 @@ int copy_ftree(const char *src, const char *dest) {
     return -1;
     } //if source is a file
     if (S_ISREG(sourcefile -> st_mode)){
-    printf("%s is regular file \n", src);
+    printf("INFO: %s is regular file \n", src);
         bool writefile = true;
         directory = opendir(dest);
 	if( directory == NULL ){
-
+	    //printf("failed to open directory.\n");
 	    perror("failed to open a directory.\n");
 
 	}
         while((dir_contents = readdir(directory)) != NULL){
-            if (strcmp(dir_contents -> d_name, src) == 0){ // if they have the same name           
-        	printf("the two files have the same name");
+	    //printf("currently comparing %s and %s \n", src_name, dir_contents->d_name);
+            if (strcmp(dir_contents -> d_name, src_name) == 0){ // if they have the same name           
+        	printf("the two files have the same name \n");
         	struct stat *file2 = malloc(sizeof(struct stat));
-                lstat(concat(concat(dest, "/"), dir_contents -> d_name), file2); //need actual file path will do later
-                f2 = fopen(dir_contents ->d_name, "rb");
+                lstat(concat(concat(dest, "/"), dir_contents -> d_name), file2); //uses actual file path
+                f2 = fopen(concat(concat(dest, "/"), dir_contents ->d_name), "rb");
                 if (f1 && f2){ //succesfully open the files
+		    printf("source file size: %d file 2 size: %d \n", sourcefile->st_size, file2->st_size);
                     if (((sourcefile->st_size == file2->st_size) && (strcmp(hash(f1),hash(f2))== 0))){ // if they have same size and hash
                         writefile = false;
+			printf("file already exists \n");
 			
                     }
                 } else {
@@ -199,51 +202,58 @@ int copy_ftree(const char *src, const char *dest) {
         }
         if (writefile){
         
+	    printf("writing file\n");
 	    f2 = fopen(dest_file, "wb");
         
-	if( f2 == NULL ) {
+	    if( f2 == NULL ) {
 
-            printf("destination file %s is null \n", dest_file);
+                printf("destination file %s is null \n", dest_file);
 
-        }   
+            } else {
 
-            rewind(f1);
+	    //printf("rewinding src file\n");
+                rewind(f1);
             //void *buffer = malloc(100);
-        //printf("code reached point where it starts to copy file data \n");
-            /*while((fread(buffer, 1, sizeof(buffer), f1) != 0)){
-                fwrite(buffer, 1, sizeof(buffer), f2); // rewrtie the entire fucken file
+            //printf("code reached point where it starts to copy file data \n");
+                /*while((fread(buffer, 1, sizeof(buffer), f1) != 0)){
+                    fwrite(buffer, 1, sizeof(buffer), f2); // rewrtie the entire fucken file
             
-        */
-        int curr;
-        while((curr = fgetc(f1)) != EOF){
-            //printf("going to write data \n");
-            fwrite(&curr, 1, sizeof(curr), f2);
-            printf("wrote some to file \n");
+            */
+	    //printf("about to write %s to dest\n", src);
+                int curr;
+                while((curr = fgetc(f1)) != EOF){
+                    //printf("going to write data \n");
+                    fwrite(&curr, 1, 1, f2);
+                    //printf("wrote some to file \n");
 
+                } 
+
+            }
+	
+        //printf("file was successfully copied \n");
         }
-        printf("file was successfully copied \n");
-    }
         // change permission of rewrittened file
         
-    chmod(dest_file, sourcefile -> st_mode); // need actual file path name to use this
+        chmod(dest_file, sourcefile -> st_mode); //uses file path
     //if source is directory
     } else if (S_ISDIR(sourcefile->st_mode)){
         bool makedir = true;
         directory = opendir(dest);
         while((dir_contents = readdir(directory)) != NULL){ // check if directory already exists
-        if (dir_contents -> d_name[0] != '.'){
-                if (!strcmp(dir_contents -> d_name, src_name) && (dir_contents -> d_type == DT_DIR)){ // if they have the same name and they are both directories
+            if (dir_contents -> d_name[0] != '.'){
+		    printf("TEST: contents: %s src_name: %s \n", dir_contents->d_name, src_name);
+                if ((strcmp(dir_contents -> d_name, src_name) == 0) && (dir_contents -> d_type == DT_DIR)){ // if they have the same name and they are both directories
                     makedir = false;
                     printf("don't need to make folder %s because %s already exists\n", src_name, dir_contents -> d_name);
-            } else if (strcmp(dir_contents -> d_name, src_name) == 0){
-            printf("%s is the same as %s \n", dir_contents -> d_name, src_name);
+                } else if (strcmp(dir_contents -> d_name, src_name) == 0){
+                printf("BAD: %s is the same as %s \n", dir_contents -> d_name, src_name);
                     perror("there is a file in destination that has the same name as source directory but is not a directory");
                 }
-        }
+            }
         }
         closedir(directory);
         if (makedir){
-        printf("making directory %s \n", dest_file);
+            printf("making directory %s \n", dest_file);
             mkdir(dest_file, sourcefile ->st_mode);
         }
         src_directory = opendir(src);
@@ -251,13 +261,13 @@ int copy_ftree(const char *src, const char *dest) {
         directory = opendir(dest_file); //need actual file path
         int parent_forks = 0;
         while ((dir_contents = readdir(src_directory)) != NULL ){ //read all contents in source directory
-        printf("currently on %s \n", dir_contents->d_name);
+        //printf("currently on %s \n", dir_contents->d_name);
             if (dir_contents -> d_name[0] != '.'){
                 if (dir_contents -> d_type ==  DT_REG){
-                    printf("recursive call on %s in src, regular file \n", dir_contents ->d_name);
+                    //printf("recursive call on %s in src, regular file \n", dir_contents ->d_name);
                     copy_ftree(concat(concat(src,"/"),dir_contents -> d_name), dest_file ); //need actual file path for both arguements
                 } else if (dir_contents -> d_type == DT_DIR){ // if sub directory in source directory is also a directory0
-                    printf("recursive call on %s in src, directory \n", dir_contents -> d_name);
+                    //printf("recursive call on %s in src, directory \n", dir_contents -> d_name);
                     int result = fork();
                     if (result == -1){
                         perror ("Fork failed");
