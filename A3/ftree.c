@@ -228,6 +228,9 @@ int copy_ftree(const char *src, const char *dest) {
 
                 } 
 
+	    fclose(f1);
+	    fclose(f2);
+
             }
 	
         //printf("file was successfully copied \n");
