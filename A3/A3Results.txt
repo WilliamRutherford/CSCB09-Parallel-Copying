@@ -1,0 +1,260 @@
+==========
+StudentID: group_0247
+
+
+Invoking: timeout 10s ./part1test.sh 
+===== Testing compilation and error messages =====
+Test 1a: fcopy with illegal argument should print errors:
+T1a: failed
+
+Test 1b: fcopy with illegal destination should print errors:
+T1b: failed
+
+Test 2: Checking for invalid includes and use of goto:
+T2: passed
+
+===== Test Cases without Errors =====
+----------
+$ ls -Rali EmptyDirectory
+EmptyDirectory:
+total 0
+1012116 drwx------ 1 tishkin2 cmsusers   0 Apr 13 16:18 .
+1125353 drwx------ 1 tishkin2 cmsusers 872 Apr 13 16:18 ..
+
+Invoking: timeout 10s ./fcopy EmptyDirectory TestDest
+Copy completed successfully
+1 processes used
+
+Checking structure of copied directory ...
+[SUCCESS] File structure matches
+
+Checking structure of copied directory ...
+[SUCCESS] File structure and permissions match
+
+Checking content of files ...
+[SUCCESS] File content matches
+
+Checking number of processes used ...
+[SUCCESS] Number of processes used is as expected
+
+----------
+$ ls -Rali DirWithOneFile
+DirWithOneFile:
+total 0
+1426746 drwx------ 1 tishkin2 cmsusers  80 Apr 13 16:18 .
+1125353 drwx------ 1 tishkin2 cmsusers 924 Apr 13 16:18 ..
+ 699623 -rw------- 1 tishkin2 cmsusers 512 Apr 13 16:18 file1
+
+Invoking: timeout 10s ./fcopy DirWithOneFile TestDest
+Copy completed successfully
+1 processes used
+
+Checking structure of copied directory ...
+[SUCCESS] File structure matches
+
+Checking structure of copied directory ...
+[SUCCESS] File structure and permissions match
+
+Checking content of files ...
+[SUCCESS] File content matches
+
+Checking number of processes used ...
+[SUCCESS] Number of processes used is as expected
+
+----------
+$ ls -Rali DirWithFiles
+DirWithFiles:
+total 0
+ 786825 drwx------ 1 tishkin2 cmsusers  128 Apr 13 16:18 .
+1125353 drwx------ 1 tishkin2 cmsusers  924 Apr 13 16:18 ..
+ 153846 -rwxr-xr-x 1 tishkin2 cmsusers 1024 Apr 13 16:18 file1
+ 348757 -rw-r--r-- 1 tishkin2 cmsusers 1024 Apr 13 16:18 file2
+ 188457 -r--r--r-- 1 tishkin2 cmsusers 1024 Apr 13 16:18 file3
+
+Invoking: timeout 10s ./fcopy DirWithFiles TestDest
+Copy completed successfully
+1 processes used
+
+Checking structure of copied directory ...
+[SUCCESS] File structure matches
+
+Checking structure of copied directory ...
+[SUCCESS] File structure and permissions match
+
+Checking content of files ...
+[SUCCESS] File content matches
+
+Checking number of processes used ...
+[SUCCESS] Number of processes used is as expected
+
+----------
+$ ls -Rali DirWithSubDir
+DirWithSubDir:
+total 0
+ 218349 drwx------ 1 tishkin2 cmsusers  80 Apr 13 16:18 .
+1125353 drwx------ 1 tishkin2 cmsusers 924 Apr 13 16:18 ..
+1514980 drwx------ 1 tishkin2 cmsusers 104 Apr 13 16:18 SubDir
+
+DirWithSubDir/SubDir:
+total 0
+1514980 drwx------ 1 tishkin2 cmsusers  104 Apr 13 16:18 .
+ 218349 drwx------ 1 tishkin2 cmsusers   80 Apr 13 16:18 ..
+ 234280 -rw------- 1 tishkin2 cmsusers 4096 Apr 13 16:18 file1
+ 525516 -rw------- 1 tishkin2 cmsusers 1024 Apr 13 16:18 file2
+
+Invoking: timeout 10s ./fcopy DirWithSubDir TestDest
+Copy completed successfully
+2 processes used
+
+Checking structure of copied directory ...
+[SUCCESS] File structure matches
+
+Checking structure of copied directory ...
+[SUCCESS] File structure and permissions match
+
+Checking content of files ...
+[SUCCESS] File content matches
+
+Checking number of processes used ...
+[SUCCESS] Number of processes used is as expected
+
+----------
+$ ls -Rali TestDirectory
+TestDirectory:
+total 0
+ 167011 drwx------ 1 tishkin2 cmsusers  156 Apr 13 16:18 .
+1125353 drwx------ 1 tishkin2 cmsusers  924 Apr 13 16:18 ..
+1483220 -rwx------ 1 tishkin2 cmsusers 1024 Apr 13 16:18 file1
+ 165759 -rw------- 1 tishkin2 cmsusers 1024 Apr 13 16:18 file2
+1564375 -r-------- 1 tishkin2 cmsusers 1024 Apr 13 16:18 file3
+ 176337 drwx------ 1 tishkin2 cmsusers  104 Apr 13 16:18 SubDirectory
+
+TestDirectory/SubDirectory:
+total 0
+176337 drwx------ 1 tishkin2 cmsusers  104 Apr 13 16:18 .
+167011 drwx------ 1 tishkin2 cmsusers  156 Apr 13 16:18 ..
+293209 -rw------- 1 tishkin2 cmsusers  512 Apr 13 16:18 file1
+916408 -rw------- 1 tishkin2 cmsusers 4096 Apr 13 16:18 file2
+
+Invoking: timeout 10s ./fcopy TestDirectory TestDest
+Copy completed successfully
+2 processes used
+
+Checking structure of copied directory ...
+[SUCCESS] File structure matches
+
+Checking structure of copied directory ...
+[SUCCESS] File structure and permissions match
+
+Checking content of files ...
+[SUCCESS] File content matches
+
+Checking number of processes used ...
+[SUCCESS] Number of processes used is as expected
+
+----------
+$ ls -Rali TestDirectory2
+TestDirectory2:
+total 0
+ 342776 drwx------ 1 tishkin2 cmsusers  156 Apr 13 16:18 .
+1125353 drwx------ 1 tishkin2 cmsusers  924 Apr 13 16:18 ..
+ 191534 -rwx------ 1 tishkin2 cmsusers 1024 Apr 13 16:18 file1
+ 997454 -rw------- 1 tishkin2 cmsusers 1024 Apr 13 16:18 file2
+ 191533 -r-------- 1 tishkin2 cmsusers 1024 Apr 13 16:18 file3
+ 489105 drwx------ 1 tishkin2 cmsusers  168 Apr 13 16:18 SubDirectory
+
+TestDirectory2/SubDirectory:
+total 0
+489105 drwx------ 1 tishkin2 cmsusers  168 Apr 13 16:18 .
+342776 drwx------ 1 tishkin2 cmsusers  156 Apr 13 16:18 ..
+168633 -rw------- 1 tishkin2 cmsusers  512 Apr 13 16:18 file1
+648816 -rw------- 1 tishkin2 cmsusers 4096 Apr 13 16:18 file2
+499338 drwx------ 1 tishkin2 cmsusers  156 Apr 13 16:18 TestDirectory
+361551 drwx------ 1 tishkin2 cmsusers  160 Apr 13 16:18 TestSubDirectory
+
+TestDirectory2/SubDirectory/TestDirectory:
+total 0
+499338 drwx------ 1 tishkin2 cmsusers  156 Apr 13 16:18 .
+489105 drwx------ 1 tishkin2 cmsusers  168 Apr 13 16:18 ..
+157957 -rwx------ 1 tishkin2 cmsusers 1024 Apr 13 16:18 file1
+175066 -rw------- 1 tishkin2 cmsusers 1024 Apr 13 16:18 file2
+946411 -r-------- 1 tishkin2 cmsusers 1024 Apr 13 16:18 file3
+227180 drwx------ 1 tishkin2 cmsusers  104 Apr 13 16:18 SubDirectory
+
+TestDirectory2/SubDirectory/TestDirectory/SubDirectory:
+total 0
+227180 drwx------ 1 tishkin2 cmsusers  104 Apr 13 16:18 .
+499338 drwx------ 1 tishkin2 cmsusers  156 Apr 13 16:18 ..
+185021 -rw------- 1 tishkin2 cmsusers  512 Apr 13 16:18 file1
+207417 -rw------- 1 tishkin2 cmsusers 4096 Apr 13 16:18 file2
+
+TestDirectory2/SubDirectory/TestSubDirectory:
+total 0
+361551 drwx------ 1 tishkin2 cmsusers  160 Apr 13 16:18 .
+489105 drwx------ 1 tishkin2 cmsusers  168 Apr 13 16:18 ..
+251425 -rwx------ 1 tishkin2 cmsusers 1024 Apr 13 16:18 file1
+289801 -rw------- 1 tishkin2 cmsusers 1024 Apr 13 16:18 file2
+251106 -r-------- 1 tishkin2 cmsusers 1024 Apr 13 16:18 file3
+685661 drwx------ 1 tishkin2 cmsusers  128 Apr 13 16:18 SubSubDirectory
+
+TestDirectory2/SubDirectory/TestSubDirectory/SubSubDirectory:
+total 0
+ 685661 drwx------ 1 tishkin2 cmsusers  128 Apr 13 16:18 .
+ 361551 drwx------ 1 tishkin2 cmsusers  160 Apr 13 16:18 ..
+1136197 -rwx------ 1 tishkin2 cmsusers 1024 Apr 13 16:18 file1
+ 191409 -rw------- 1 tishkin2 cmsusers 1024 Apr 13 16:18 file2
+1485657 -r-------- 1 tishkin2 cmsusers 1024 Apr 13 16:18 file3
+
+Invoking: timeout 10s ./fcopy TestDirectory2 TestDest
+Copy completed successfully
+6 processes used
+
+Checking structure of copied directory ...
+[SUCCESS] File structure matches
+
+Checking structure of copied directory ...
+[SUCCESS] File structure and permissions match
+
+Checking content of files ...
+[SUCCESS] File content matches
+
+Checking number of processes used ...
+[SUCCESS] Number of processes used is as expected
+
+===== Test Cases with Errors =====
+----------
+$ ls -Rali DirWithSymLink
+DirWithSymLink:
+total 0
+ 698347 drwx------ 1 tishkin2 cmsusers  104 Apr 13 16:18 .
+1125353 drwx------ 1 tishkin2 cmsusers  924 Apr 13 16:18 ..
+1279539 -rw------- 1 tishkin2 cmsusers 1024 Apr 13 16:18 file1
+ 173033 lrwxrwxrwx 1 tishkin2 cmsusers    5 Apr 13 16:18 symlink1 -> file1
+
+Invoking: timeout 10s ./fcopy DirWithSymLink TestDest
+Copy completed successfully
+1 processes used
+
+Checking structure of copied directory ...
+5d4
+< symlink1
+[SUCCESS] File structure fails to match
+
+----------
+$ ls -Rali DirWithDotFile
+DirWithDotFile:
+total 0
+ 273946 drwx------ 1 tishkin2 cmsusers  104 Apr 13 16:18 .
+1125353 drwx------ 1 tishkin2 cmsusers  924 Apr 13 16:18 ..
+1338575 -rw------- 1 tishkin2 cmsusers 1024 Apr 13 16:18 file1
+1338574 -rw------- 1 tishkin2 cmsusers 1024 Apr 13 16:18 .file1
+
+Invoking: timeout 10s ./fcopy DirWithDotFile TestDest
+Copy completed successfully
+1 processes used
+
+Checking structure of copied directory ...
+5d4
+< .file1
+[SUCCESS] File structure fails to match
+
